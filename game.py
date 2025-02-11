@@ -1,6 +1,9 @@
+# this game is an implementation of Conway's Game of Life: https://en.wikipedia.org/wiki/Conway's_Game_of_Life
 # this code took references from W3Schools: https://www.w3schools.com/python/
 # this code utilizes the curses python library
-# documentation can be found here: https://docs.python.org/3/howto/curses.html
+# documentation can be found here:
+# https://docs.python.org/3/howto/curses.html
+# https://docs.python.org/3/library/curses.html#module-curses
 import curses
 from curses import wrapper
 
@@ -16,30 +19,55 @@ def create_blank_board(y: int, x: int) -> list:
         board.append(line)
     return board
 
-# returns the character to be printed if the cell is alive or dead
-def life_char(alive: bool) -> int:
-    if alive:
-        return curses.ACS_BLOCK
-    else:
-        return curses.ACS_BOARD
-
+# prints the whole board
 def print_board(stdscr, board: list):
     for i in range(curses.LINES - 1):
         for j in range(curses.COLS):
-            stdscr.addch(life_char(board[i][j]))
+            if board[i][j]:
+                stdscr.addch(curses.ACS_BLOCK)
+            else:
+                stdscr.addch(curses.ACS_BOARD)
 
 # updates a cell on the board and draws it to screen
-def update(stdscr, board: list, y: int, x: int, life: bool):
-    board[y][x] = life
+def update(stdscr, board: list, y: int, x: int, painted: bool):
+    board[y][x] = painted
     stdscr.addch(life_char(board[y][x]))
     stdscr.move(y, x)
 
-# changes life state of a piece on the board
-def life(board: list, y: int, x: int, life: bool):
-    board[y][x] = life
+## moves time ahead one unit of time
+#def move_time(stdscr, board: list, y_len: int, x_len: int):
+#    # save position of mouse
+#    y_pos, x_pos = stdscr.getyx()
+#    # cells that are now alive
+#    alive_cells = []
+#    # cells that are now dead
+#    dead_cells = []
+#    for y in range(1, y_len - 1):
+#        for x in range(1, x_len - 1):
+#            neighbors = 0
+#            # counts number of neighbors
+#            for i in range(-1, 1):
+#                for j in range(-1, 1):
+#                    if i == 0 and j == 0: 
+#                        continue
+#                    if board[y + i][x + j]:
+#                        neighbors += 1
+#            if board[y][x] and neighbors < 2:
+#                dead_cells.append((y, x))
+#            elif board[y][x] and neighbors > 3:
+#                dead_cells.append((y, x))
+#            elif not board[y][x] and neighbors == 3:
+#                alive_cells.append((y, x))
+#            f.write(str(neighbors))
+#        f.write('\n')
+#    for cell in alive_cells:
+#        update(stdscr, board, y, x, True)
+#    for cell in dead_cells:
+#        update(stdscr, board, y, x, False)
+#    stdscr.move(y_pos, x_pos)
 
 # processes keystrokes
-def process_keys(stdscr, board):
+def process_input(stdscr, board: list) -> int:
     key = stdscr.getkey()
     y, x = stdscr.getyx()
     if key == "w":
@@ -58,6 +86,8 @@ def process_keys(stdscr, board):
         update(stdscr, board, y, x, True)
     elif key == ".":
         update(stdscr, board, y, x, False)
+#    elif key == "t":
+#        move_time(stdscr, board, curses.LINES - 1, curses.COLS)
     elif key == "q":
         return -1
 
@@ -71,7 +101,7 @@ def main(stdscr):
     print_board(stdscr, board)
 
     while True:
-        if process_keys(stdscr, board) == -1:
+        if process_input(stdscr, board) == -1:
             break
         stdscr.refresh()
 
