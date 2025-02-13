@@ -29,42 +29,64 @@ def print_board(stdscr, board: list):
                 stdscr.addch(curses.ACS_BOARD)
 
 # updates a cell on the board and draws it to screen
-def update(stdscr, board: list, y: int, x: int, painted: bool):
-    board[y][x] = painted
-    stdscr.addch(life_char(board[y][x]))
+def update(stdscr, board: list, y: int, x: int, life: bool):
+    stdscr.move(y, x)
+    board[y][x] = life
+    if life:
+        stdscr.addch(curses.ACS_BLOCK)
+    else:
+        stdscr.addch(curses.ACS_BOARD)
     stdscr.move(y, x)
 
-## moves time ahead one unit of time
-#def move_time(stdscr, board: list, y_len: int, x_len: int):
-#    # save position of mouse
-#    y_pos, x_pos = stdscr.getyx()
-#    # cells that are now alive
-#    alive_cells = []
-#    # cells that are now dead
-#    dead_cells = []
-#    for y in range(1, y_len - 1):
-#        for x in range(1, x_len - 1):
-#            neighbors = 0
-#            # counts number of neighbors
+# moves time ahead one unit of time
+def move_time(stdscr, board: list, y_len: int, x_len: int):
+    # save position of cursor
+    y_pos, x_pos = stdscr.getyx()
+    # cells that are now alive
+    alive_cells = []
+    # cells that are now dead
+    dead_cells = []
+    for y in range(0, y_len - 1):
+        for x in range(0, x_len - 1):
+            neighbors = 0
+            # counts number of neighbors
 #            for i in range(-1, 1):
 #                for j in range(-1, 1):
 #                    if i == 0 and j == 0: 
 #                        continue
 #                    if board[y + i][x + j]:
 #                        neighbors += 1
-#            if board[y][x] and neighbors < 2:
-#                dead_cells.append((y, x))
-#            elif board[y][x] and neighbors > 3:
-#                dead_cells.append((y, x))
-#            elif not board[y][x] and neighbors == 3:
-#                alive_cells.append((y, x))
-#            f.write(str(neighbors))
-#        f.write('\n')
-#    for cell in alive_cells:
-#        update(stdscr, board, y, x, True)
-#    for cell in dead_cells:
-#        update(stdscr, board, y, x, False)
-#    stdscr.move(y_pos, x_pos)
+            if board[y-1][x-1]:
+                neighbors += 1
+            if board[y-1][x]:
+                neighbors += 1
+            if board[y-1][x+1]:
+                neighbors += 1
+            if board[y][x-1]:
+                neighbors += 1
+            if board[y][x+1]:
+                neighbors += 1
+            if board[y+1][x-1]:
+                neighbors += 1
+            if board[y+1][x]:
+                neighbors += 1
+            if board[y][x+1]:
+                neighbors += 1
+
+            f.write(str(neighbors))
+            if board[y][x] and neighbors < 2:
+                dead_cells.append((y, x))
+            elif board[y][x] and neighbors > 3:
+                dead_cells.append((y, x))
+            elif not board[y][x] and neighbors == 3:
+                alive_cells.append((y, x))
+        f.write('\n')
+    f.write("\n---\n")
+    for cell in alive_cells:
+        update(stdscr, board, cell[0], cell[1], True)
+    for cell in dead_cells:
+        update(stdscr, board, cell[0], cell[1], False)
+    stdscr.move(y_pos, x_pos)
 
 # processes keystrokes
 def process_input(stdscr, board: list) -> int:
@@ -86,8 +108,8 @@ def process_input(stdscr, board: list) -> int:
         update(stdscr, board, y, x, True)
     elif key == ".":
         update(stdscr, board, y, x, False)
-#    elif key == "t":
-#        move_time(stdscr, board, curses.LINES - 1, curses.COLS)
+    elif key == "t":
+        move_time(stdscr, board, curses.LINES - 1, curses.COLS)
     elif key == "q":
         return -1
 
